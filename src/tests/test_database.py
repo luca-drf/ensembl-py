@@ -16,7 +16,7 @@ per public function/class method.
 
 Typical usage example::
 
-    $ pytest test_db.py
+    $ pytest test_database.py
 
 """
 
