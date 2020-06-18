@@ -12,13 +12,16 @@
 """Database connection handler.
 
 This module provides the main class to connect to and access databases. The connection will provide ORM-less,
-that is, the data can only be accessed via SQL queries (see below).
+that is, the data can only be accessed via SQL queries (see example below).
 
 Typical usage example::
 
     dbc = DBConnection('mysql://ensro@mysql-server:4242/mydb')
     # You can access the database data via sql queries, for instance:
     results = dbc.execute('SELECT * FROM my_table;')
+    # Or via a connection in a transaction manner:
+    with dbc.begin() as conn:
+        results = conn.execute('SELECT * FROM my_table;')
 
 """
 

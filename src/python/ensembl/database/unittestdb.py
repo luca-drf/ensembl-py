@@ -112,7 +112,7 @@ class UnitTestDB:
 
         """
         if self.dbc.dialect == 'sqlite':
-            # SQLite does not have an equivalent to "LOAD DATA": use its '.import' command
+            # SQLite does not have an equivalent to "LOAD DATA": use its '.import' command instead
             try:
                 subprocess.run(
                     ['sqlite3', self.dbc.db_name, ".mode tabs", f".import {filepath} {table}"],
