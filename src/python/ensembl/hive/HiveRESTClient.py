@@ -11,7 +11,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 """
-import contextlib
 import logging
 
 import eHive
@@ -48,7 +47,7 @@ class HiveRESTClient(eHive.BaseRunnable):
             'method_retry': list(Retry.DEFAULT_METHOD_WHITELIST)
         }
 
-    def _open_session(self):
+    def _get_session(self):
         """
         Set up an HTTPAdapter to allow API call retries in case of Networks failures or remote API unavailability
         :return A new requests.Session object
@@ -63,42 +62,27 @@ class HiveRESTClient(eHive.BaseRunnable):
         http.mount("http://", adapter)
         return http
 
-    def _close_session(self, session):
-        """
-        Close all potential remaining connections in current Session
-        :return None
-        """
-        session.close()
-
-    @contextlib.contextmanager
-    def _session_scope(self):
-        """ Ensure HTTP session is closed after processing code"""
-        session = self._open_session()
-        logger.debug("HTTP Session opened %s", session)
-        try:
-            yield session
-        except requests.HTTPError as e:
-            message = "Error performing request {}: {}".format(self.param('endpoint'), e.strerror)
-            self.warning(message)
-            raise e
-        finally:
-            logger.debug("Closing session")
-            self._close_session(session)
-
     def fetch_input(self):
         """
         Basic call to request parameters specified in pipeline parameters
         Return response received.
         """
-        with self._session_scope() as http:
-            response = http.request(method=self.param_required('method'),
-                                         url=self.param_required('endpoint'),
-                                         headers=self.param('headers'),
-                                         files=self.param('files'),
-                                         data=self.param('payload'),
-                                         timeout=self.param('timeout'))
-            self.param('response', response)
-
+        with self._get_session() as http:
+            logger.debug("HTTP Session opened %s", http)
+            try:
+                response = http.request(method=self.param_required('method'),
+                                             url=self.param_required('endpoint'),
+                                             headers=self.param('headers'),
+                                             files=self.param('files'),
+                                             data=self.param('payload'),
+                                             timeout=self.param('timeout'))
+                self.param('response', response)
+            except requests.HTTPError as e:
+                message = "Error performing request {}: {}".format(self.param('endpoint'), e.strerror)
+                self.warning(message)
+                raise e
+            finally:
+                logger.debug("Closing session")
 
     def write_output(self):
         """
