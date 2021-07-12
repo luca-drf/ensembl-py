@@ -27,6 +27,7 @@
 #     are actually reserved (e.g. type, map, id) please help changing them into
 #     meaningful ones
 
+# type: ignore
 
 from sqlalchemy import (
     Column,
@@ -54,6 +55,7 @@ from sqlalchemy.dialects.mysql import (
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
+
 
 Base = declarative_base()
 metadata = Base.metadata
@@ -1125,7 +1127,9 @@ class UnmappedObject(Base):
     )
 
     unmapped_object_id = Column(INTEGER(10), primary_key=True)
-    unmapped_object_type = Column("type", Enum("xref", "cDNA", "Marker"), nullable=False)
+    unmapped_object_type = Column(
+        "type", Enum("xref", "cDNA", "Marker"), nullable=False
+    )
     analysis_id = Column(
         ForeignKey("analysis.analysis_id"),
         nullable=False,
